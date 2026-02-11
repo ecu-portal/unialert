@@ -1,157 +1,230 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UniAlert</title>
-<style>
-body{
-    margin:0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg,#1e3c72,#2a5298);
-    color:white;
-    text-align:center;
-}
-.container{
-    max-width:500px;
-    margin:50px auto;
-    background:white;
-    color:black;
-    padding:25px;
-    border-radius:15px;
-    box-shadow:0 10px 25px rgba(0,0,0,0.3);
-}
-h1{
-    color:#2a5298;
-}
-button{
-    padding:10px 20px;
-    margin:10px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    background:#2a5298;
-    color:white;
-    font-size:14px;
-}
-button:hover{
-    background:#1e3c72;
-}
-input, select{
-    width:90%;
-    padding:8px;
-    margin:8px 0;
-    border-radius:6px;
-    border:1px solid #ccc;
-}
-.hidden{
-    display:none;
-}
-.notification{
-    background:#ffcc00;
-    padding:10px;
-    border-radius:8px;
-    margin:10px 0;
-}
-.table{
-    margin-top:15px;
-    border-collapse:collapse;
-    width:100%;
-}
-.table th,.table td{
-    border:1px solid #ddd;
-    padding:8px;
-}
-.table th{
-    background:#2a5298;
-    color:white;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniAlert - ECU</title>
+    <style>
+        :root {
+            --main-red: #c0392b;
+            --dark-red: #8e1e14;
+            --white: #ffffff;
+            --gray: #f4f4f4;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--gray);
+            color: #333;
+            text-align: center;
+        }
+
+        /* Splash Screen - واجهة البداية */
+        #welcomeScreen {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: 0.5s;
+        }
+
+        #welcomeScreen img {
+            width: 200px; /* حجم اللوجو */
+            margin-bottom: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-top: 5px solid var(--main-red);
+        }
+
+        h1 { color: var(--main-red); margin-bottom: 20px; }
+
+        button {
+            padding: 12px 25px;
+            margin: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: var(--main-red);
+            color: white;
+            font-weight: bold;
+            width: 80%;
+            transition: 0.3s;
+        }
+
+        button:hover { background: var(--dark-red); }
+
+        input, select {
+            width: 90%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .hidden { display: none; }
+
+        .notification {
+            background: #fff3f3;
+            color: var(--main-red);
+            padding: 15px;
+            border-left: 5px solid var(--main-red);
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th { background: var(--main-red); color: white; }
+
+        .email-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: -5px;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
 
-<div class="container" id="roleSelection">
+<div id="welcomeScreen">
+    <img src="https://via.placeholder.com/200x100?text=ECU+LOGO" alt="ECU Logo">
+    <h2 style="color: #c0392b;">Welcome to UniAlert</h2>
+    <p>Loading University Portal...</p>
+</div>
+
+<div class="container hidden" id="rolePage">
     <h1>UniAlert</h1>
-    <p>اختر نوع المستخدم</p>
-    <button onclick="selectRole('student')">طالب</button>
-    <button onclick="selectRole('doctor')">دكتور</button>
-    <button onclick="selectRole('assistant')">معيد</button>
+    <p>Please select your role to continue</p>
+    <button onclick="showColleges()">Student</button>
+</div>
+
+<div class="container hidden" id="collegePage">
+    <h1>Select College</h1>
+    <button onclick="goToLogin('Veterinary Medicine')">Veterinary Medicine</button>
+    <button onclick="goToLogin('Computers & IT')">Computers & IT</button>
+    <button onclick="goToLogin('Fine Arts')">Fine Arts</button>
+    <button onclick="goToLogin('Mass Communication')">Mass Communication</button>
 </div>
 
 <div class="container hidden" id="loginPage">
-    <h1>تسجيل الدخول</h1>
-    <select>
-        <option>اختر الجامعة</option>
-        <option>جامعة القاهرة</option>
-        <option>جامعة الإسكندرية</option>
-    </select>
-    <select>
-        <option>اختر الكلية</option>
-        <option>حاسبات ومعلومات</option>
-        <option>هندسة</option>
-    </select>
-    <input type="text" placeholder="ادخل ID الجامعي">
-    <button onclick="login()">دخول</button>
+    <h1 id="selectedCollegeName">Login</h1>
+    <input type="email" id="userEmail" placeholder="Academic Email">
+    <p class="email-hint">Example: name@ecu.edu.eg</p>
+    <input type="password" placeholder="Password">
+    <button onclick="doLogin()">Login</button>
 </div>
 
-<div class="container hidden" id="studentDashboard">
-    <h1>جدول المحاضرات</h1>
-    <div class="notification" id="notify">لا يوجد تغييرات حالياً</div>
-    <table class="table">
-        <tr>
-            <th>المادة</th>
-            <th>اليوم</th>
-            <th>الوقت</th>
-            <th>المكان</th>
-        </tr>
-        <tr>
-            <td>Programming 2</td>
-            <td>الأحد</td>
-            <td id="lectureTime">10:00 AM</td>
-            <td id="lecturePlace">مدرج 1</td>
-        </tr>
+<div class="container hidden" id="dashboard">
+    <h1>Academic Schedule</h1>
+    <div class="notification" id="notifBox">Status: All classes are on time.</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Day</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody id="scheduleBody">
+            </tbody>
     </table>
-</div>
-
-<div class="container hidden" id="doctorDashboard">
-    <h1>لوحة تحكم الدكتور</h1>
-    <p>تعديل بيانات المحاضرة</p>
-    <input type="text" id="newTime" placeholder="الوقت الجديد">
-    <input type="text" id="newPlace" placeholder="المكان الجديد">
-    <button onclick="updateLecture()">تحديث</button>
+    <button style="background: #555; margin-top: 20px;" onclick="simulateUpdate()">Simulate Change (Demo)</button>
 </div>
 
 <script>
-let currentRole="";
+    // 1. التحكم في شاشة البداية
+    setTimeout(() => {
+        document.getElementById('welcomeScreen').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('rolePage').classList.remove('hidden');
+        }, 500);
+    }, 3000); // تظهر لمدة 3 ثواني
 
-function selectRole(role){
-    currentRole=role;
-    document.getElementById("roleSelection").classList.add("hidden");
-    document.getElementById("loginPage").classList.remove("hidden");
-}
+    let selectedCollege = "";
 
-function login(){
-    document.getElementById("loginPage").classList.add("hidden");
-    if(currentRole==="student"){
-        document.getElementById("studentDashboard").classList.remove("hidden");
-    }else{
-        document.getElementById("doctorDashboard").classList.remove("hidden");
-    }
-}
-
-function updateLecture(){
-    let time=document.getElementById("newTime").value;
-    let place=document.getElementById("newPlace").value;
-
-    if(time){
-        document.getElementById("lectureTime").innerText=time;
-    }
-    if(place){
-        document.getElementById("lecturePlace").innerText=place;
+    function showColleges() {
+        document.getElementById('rolePage').classList.add('hidden');
+        document.getElementById('collegePage').classList.remove('hidden');
     }
 
-    alert("تم تحديث المحاضرة وإرسال إشعار للطلاب");
-}
+    function goToLogin(college) {
+        selectedCollege = college;
+        document.getElementById('collegePage').classList.add('hidden');
+        document.getElementById('loginPage').classList.remove('hidden');
+        document.getElementById('selectedCollegeName').innerText = college + " Login";
+    }
+
+    function doLogin() {
+        const email = document.getElementById('userEmail').value;
+        if(email.endsWith("@ecu.edu.eg")) {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            loadSchedule();
+        } else {
+            alert("Please use your official university email: @ecu.edu.eg");
+        }
+    }
+
+    function loadSchedule() {
+        const scheduleBody = document.getElementById('scheduleBody');
+        // مثال لبيانات المواد
+        const data = [
+            {sub: "Programming 1", day: "Monday", time: "09:00 AM"},
+            {sub: "Mathematics", day: "Wednesday", time: "11:00 AM"}
+        ];
+        
+        scheduleBody.innerHTML = data.map(item => `
+            <tr>
+                <td>${item.sub}</td>
+                <td>${item.day}</td>
+                <td>${item.time}</td>
+            </tr>
+        `).join('');
+    }
+
+    // ميزة الإشعارات النشطة
+    function simulateUpdate() {
+        const notif = document.getElementById('notifBox');
+        notif.innerText = "⚠️ ALERT: Programming 1 moved to Room 402!";
+        notif.style.background = "#c0392b";
+        notif.style.color = "white";
+        
+        // حفظ التنبيه في الذاكرة حتى لو عمل Refresh
+        localStorage.setItem('lastUpdate', notif.innerText);
+    }
+
+    // استرجاع التنبيه عند فتح الصفحة
+    window.onload = function() {
+        const savedUpdate = localStorage.getItem('lastUpdate');
+        if(savedUpdate) {
+            // سيظهر التنبيه المحفوظ إذا كان المستخدم مسجلاً دخوله
+        }
+    }
 </script>
 
 </body>
