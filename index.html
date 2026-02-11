@@ -7,83 +7,84 @@
     <style>
         :root {
             --main-red: #c0392b;
-            --dark-red: #8e1e14;
             --white: #ffffff;
             --gray: #f4f4f4;
         }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             background-color: var(--gray);
-            color: #333;
-            text-align: center;
+            overflow-x: hidden;
         }
 
-        /* Splash Screen - واجهة البداية */
+        /* Splash Screen - شاشة البداية */
         #welcomeScreen {
             position: fixed;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: white;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
-            transition: 0.5s;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s;
         }
 
         #welcomeScreen img {
-            width: 200px; /* حجم اللوجو */
+            width: 180px;
             margin-bottom: 20px;
         }
 
         .container {
-            max-width: 500px;
-            margin: 50px auto;
-            background: var(--white);
+            max-width: 450px;
+            margin: 60px auto;
+            background: white;
             padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border-top: 5px solid var(--main-red);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-top: 6px solid var(--main-red);
+            text-align: center;
         }
 
-        h1 { color: var(--main-red); margin-bottom: 20px; }
+        h1 { color: var(--main-red); font-size: 28px; }
+        p { color: #666; }
 
         button {
-            padding: 12px 25px;
-            margin: 10px;
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
             border: none;
             border-radius: 8px;
-            cursor: pointer;
             background: var(--main-red);
             color: white;
+            font-size: 16px;
             font-weight: bold;
-            width: 80%;
+            cursor: pointer;
             transition: 0.3s;
         }
 
-        button:hover { background: var(--dark-red); }
+        button:hover { background: #a93226; transform: translateY(-2px); }
 
-        input, select {
+        input {
             width: 90%;
             padding: 12px;
             margin: 10px 0;
-            border-radius: 6px;
             border: 1px solid #ddd;
+            border-radius: 6px;
         }
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
 
-        .notification {
-            background: #fff3f3;
-            color: var(--main-red);
-            padding: 15px;
+        /* Notification Box */
+        .notif-bar {
+            background: #fff0f0;
             border-left: 5px solid var(--main-red);
-            border-radius: 8px;
+            padding: 15px;
             margin: 15px 0;
             font-weight: bold;
+            color: var(--main-red);
         }
 
         table {
@@ -93,37 +94,33 @@
         }
 
         th, td {
-            border: 1px solid #ddd;
             padding: 12px;
+            border: 1px solid #eee;
             text-align: left;
         }
 
         th { background: var(--main-red); color: white; }
 
-        .email-hint {
-            font-size: 12px;
-            color: #666;
-            margin-top: -5px;
-            margin-bottom: 10px;
-        }
+        .footer-logo { width: 80px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
 <div id="welcomeScreen">
-    <img src="https://via.placeholder.com/200x100?text=ECU+LOGO" alt="ECU Logo">
-    <h2 style="color: #c0392b;">Welcome to UniAlert</h2>
-    <p>Loading University Portal...</p>
+    <img src="https://via.placeholder.com/200x100?text=ECU+LOGO" id="mainLogo" alt="University Logo">
+    <h2 style="color: var(--main-red);">Welcome to ECU Portal</h2>
+    <p>Loading Schedule System...</p>
 </div>
 
 <div class="container hidden" id="rolePage">
     <h1>UniAlert</h1>
-    <p>Please select your role to continue</p>
+    <p>Please select to continue</p>
     <button onclick="showColleges()">Student</button>
 </div>
 
 <div class="container hidden" id="collegePage">
-    <h1>Select College</h1>
+    <h1>Our Colleges</h1>
+    <p>Select your faculty</p>
     <button onclick="goToLogin('Veterinary Medicine')">Veterinary Medicine</button>
     <button onclick="goToLogin('Computers & IT')">Computers & IT</button>
     <button onclick="goToLogin('Fine Arts')">Fine Arts</button>
@@ -131,99 +128,87 @@
 </div>
 
 <div class="container hidden" id="loginPage">
-    <h1 id="selectedCollegeName">Login</h1>
-    <input type="email" id="userEmail" placeholder="Academic Email">
-    <p class="email-hint">Example: name@ecu.edu.eg</p>
+    <h2 id="facultyTitle">Login</h2>
+    <input type="email" id="emailInput" placeholder="name@ecu.edu.eg">
     <input type="password" placeholder="Password">
-    <button onclick="doLogin()">Login</button>
+    <button onclick="handleLogin()">Sign In</button>
+    <p style="font-size: 12px;">Must use @ecu.edu.eg email</p>
 </div>
 
 <div class="container hidden" id="dashboard">
     <h1>Academic Schedule</h1>
-    <div class="notification" id="notifBox">Status: All classes are on time.</div>
+    <div id="alertBox" class="notif-bar">Status: No updates for today.</div>
     <table>
         <thead>
             <tr>
-                <th>Subject</th>
-                <th>Day</th>
+                <th>Course</th>
                 <th>Time</th>
             </tr>
         </thead>
-        <tbody id="scheduleBody">
+        <tbody id="schedule">
             </tbody>
     </table>
-    <button style="background: #555; margin-top: 20px;" onclick="simulateUpdate()">Simulate Change (Demo)</button>
+    <button style="background:#555; font-size:12px; margin-top:30px;" onclick="simulateUpdate()">Simulate Schedule Change</button>
 </div>
 
 <script>
     // 1. التحكم في شاشة البداية
-    setTimeout(() => {
-        document.getElementById('welcomeScreen').style.opacity = '0';
+    window.onload = () => {
         setTimeout(() => {
-            document.getElementById('welcomeScreen').classList.add('hidden');
+            const screen = document.getElementById('welcomeScreen');
+            screen.style.opacity = '0';
+            screen.style.visibility = 'hidden'; // عشان الزرار يدوس
             document.getElementById('rolePage').classList.remove('hidden');
-        }, 500);
-    }, 3000); // تظهر لمدة 3 ثواني
+        }, 3000); // 3 ثواني
+    };
 
-    let selectedCollege = "";
+    let userFaculty = "";
 
     function showColleges() {
         document.getElementById('rolePage').classList.add('hidden');
         document.getElementById('collegePage').classList.remove('hidden');
     }
 
-    function goToLogin(college) {
-        selectedCollege = college;
+    function goToLogin(faculty) {
+        userFaculty = faculty;
         document.getElementById('collegePage').classList.add('hidden');
         document.getElementById('loginPage').classList.remove('hidden');
-        document.getElementById('selectedCollegeName').innerText = college + " Login";
+        document.getElementById('facultyTitle').innerText = faculty;
     }
 
-    function doLogin() {
-        const email = document.getElementById('userEmail').value;
-        if(email.endsWith("@ecu.edu.eg")) {
+    function handleLogin() {
+        const email = document.getElementById('emailInput').value;
+        if(email.toLowerCase().endsWith("@ecu.edu.eg")) {
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            loadSchedule();
+            renderSchedule();
         } else {
-            alert("Please use your official university email: @ecu.edu.eg");
+            alert("Error: Access denied. Please use your official @ecu.edu.eg email.");
         }
     }
 
-    function loadSchedule() {
-        const scheduleBody = document.getElementById('scheduleBody');
-        // مثال لبيانات المواد
-        const data = [
-            {sub: "Programming 1", day: "Monday", time: "09:00 AM"},
-            {sub: "Mathematics", day: "Wednesday", time: "11:00 AM"}
+    function renderSchedule() {
+        const list = [
+            { name: "General Biology", time: "09:00 AM" },
+            { name: "Academic Writing", time: "11:30 AM" },
+            { name: "Intro to Faculty", time: "02:00 PM" }
         ];
-        
-        scheduleBody.innerHTML = data.map(item => `
+        const tbody = document.getElementById('schedule');
+        tbody.innerHTML = list.map(item => `
             <tr>
-                <td>${item.sub}</td>
-                <td>${item.day}</td>
+                <td>${item.name}</td>
                 <td>${item.time}</td>
             </tr>
         `).join('');
     }
 
-    // ميزة الإشعارات النشطة
     function simulateUpdate() {
-        const notif = document.getElementById('notifBox');
-        notif.innerText = "⚠️ ALERT: Programming 1 moved to Room 402!";
-        notif.style.background = "#c0392b";
-        notif.style.color = "white";
-        
-        // حفظ التنبيه في الذاكرة حتى لو عمل Refresh
-        localStorage.setItem('lastUpdate', notif.innerText);
-    }
-
-    // استرجاع التنبيه عند فتح الصفحة
-    window.onload = function() {
-        const savedUpdate = localStorage.getItem('lastUpdate');
-        if(savedUpdate) {
-            // سيظهر التنبيه المحفوظ إذا كان المستخدم مسجلاً دخوله
-        }
+        const alertBox = document.getElementById('alertBox');
+        alertBox.innerText = "⚠️ ATTENTION: Your 11:30 AM class moved to Hall B!";
+        alertBox.style.background = "#c0392b";
+        alertBox.style.color = "white";
+        // حفظ التنبيه
+        localStorage.setItem('ecu_update', alertBox.innerText);
     }
 </script>
 
