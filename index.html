@@ -9,163 +9,115 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
     <style>
-        :root {
-            --main-red: #c0392b;
-            --white: #ffffff;
-            --gray: #f4f4f4;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: var(--gray);
-            overflow-x: hidden;
-        }
+        :root { --main-red: #c0392b; --white: #ffffff; --gray: #f4f4f4; }
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--gray); }
 
         /* Splash Screen */
         #welcomeScreen {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.8s ease, visibility 0.8s;
-        }
-
-        #welcomeScreen img {
-            width: 180px;
-            margin-bottom: 20px;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 9999;
         }
 
         .container {
-            max-width: 450px;
-            margin: 60px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            border-top: 6px solid var(--main-red);
-            text-align: center;
+            max-width: 450px; margin: 40px auto; background: white;
+            padding: 30px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-top: 6px solid var(--main-red); text-align: center; position: relative;
         }
 
-        h1 { color: var(--main-red); font-size: 28px; }
-        p { color: #666; }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 8px;
-            background: var(--main-red);
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
+        /* الجرس */
+        .bell-container { display: flex; justify-content: flex-end; padding: 10px; cursor: pointer; }
+        .bell-icon { font-size: 28px; position: relative; transition: 0.3s; }
+        .notification-dot {
+            position: absolute; top: 2px; right: 2px; width: 12px; height: 12px;
+            background: #e74c3c; border: 2px solid white; border-radius: 50%; display: none;
         }
 
-        button:hover { background: #a93226; transform: translateY(-2px); }
-
-        input, select {
-            width: 90%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 15px;
+        /* صفحة الإشعارات (Modal) */
+        #notifModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: none; justify-content: center;
+            align-items: center; z-index: 10001;
         }
+        .modal-content {
+            background: white; padding: 25px; border-radius: 15px; width: 85%;
+            max-width: 400px; text-align: center; position: relative;
+        }
+        .modal-content h2 { color: var(--main-red); margin-top: 0; }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 25px; cursor: pointer; color: #999; }
 
+        /* Toast */
+        #toast {
+            visibility: hidden; min-width: 250px; background-color: #2c3e50;
+            color: #fff; text-align: center; border-radius: 50px; padding: 16px;
+            position: fixed; z-index: 10000; left: 50%; bottom: 30px;
+            transform: translateX(-50%); box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        button { width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 8px; background: var(--main-red); color: white; font-weight: bold; cursor: pointer; }
+        input, select { width: 90%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
         .hidden { display: none !important; }
-
-        .notif-bar {
-            background: #fff0f0;
-            border-left: 5px solid var(--main-red);
-            padding: 15px;
-            margin: 15px 0;
-            font-weight: bold;
-            color: var(--main-red);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            padding: 12px;
-            border: 1px solid #eee;
-            text-align: left;
-        }
-
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #eee; text-align: left; }
         th { background: var(--main-red); color: white; }
-
-        #adminPanel {
-            margin-top: 20px;
-            padding: 15px;
-            border-top: 2px dashed #ccc;
-            background: #f9f9f9;
-            border-radius: 8px;
-        }
     </style>
 </head>
 <body>
 
 <div id="welcomeScreen">
-    <img src="logo.png" id="mainLogo" alt="University Logo">
-    <h2 style="color: var(--main-red);">Welcome to ECU Portal</h2>
-    <p>Connecting to Firebase Realtime Database...</p>
+    <img src="logo.png" style="width: 150px;">
+    <h2 style="color: var(--main-red);">UniAlert ECU</h2>
 </div>
 
 <div class="container hidden" id="collegePage">
     <h1>Our Colleges</h1>
-    <p>Select your faculty</p>
     <button onclick="goToLogin('Veterinary Medicine')">Veterinary Medicine</button>
-    <button onclick="goToLogin('Computers and Information Systems')">Computers & IT</button>
-    <button onclick="goToLogin('Arts and Design')">Fine Arts</button>
-    <button onclick="goToLogin('Mass Communication')">Mass Communication</button>
+    <button onclick="goToLogin('Computers & IT')">Computers & IT</button>
 </div>
 
 <div class="container hidden" id="loginPage">
     <h2 id="facultyTitle">Login</h2>
+    <input type="text" id="taNameInput" placeholder="Enter your Name (For TAs only)" class="hidden">
     <input type="email" id="emailInput" placeholder="name@ecu.edu.eg">
-    <input type="password" placeholder="Password">
     <button onclick="handleLogin()">Sign In</button>
-    <p style="font-size: 12px;">Use any email starting with 'ta' for Admin Access</p>
 </div>
 
 <div class="container hidden" id="dashboard">
-    <h1 id="dashboardTitle">Academic Schedule</h1>
-    <div id="alertBox" class="notif-bar">Status: No updates for today.</div>
+    <div class="bell-container" onclick="openNotif()">
+        <div class="bell-icon">🔔<span id="dot" class="notification-dot"></span></div>
+    </div>
+    <h1>Academic Schedule</h1>
     <table>
-        <thead>
-            <tr>
-                <th>Course</th>
-                <th>Time</th>
-            </tr>
-        </thead>
-        <tbody id="schedule">
-            </tbody>
+        <thead><tr><th>Course</th><th>Time</th></tr></thead>
+        <tbody id="schedule"></tbody>
     </table>
 
-    <div id="adminPanel" class="hidden">
-        <h3 style="color: #333;">TA Control Panel</h3>
-        <p style="font-size: 13px;">Select subject to update:</p>
-        
+    <div id="adminPanel" class="hidden" style="margin-top:20px; border-top: 2px dashed #ccc; padding-top:15px;">
+        <h3>TA Control</h3>
         <select id="subjectSelect">
-            <option value="biologyTime">Course 1: General Biology</option>
-            <option value="writingTime">Course 2: Academic Writing</option>
+            <option value="General Biology">Course 1: Biology</option>
+            <option value="Academic Writing">Course 2: Writing</option>
         </select>
-
-        <input type="text" id="newTimeInput" placeholder="Enter new time (Ex: 10:30 AM)">
-        <button style="background: #2c3e50;" onclick="updateScheduleOnFirebase()">Push Update to All</button>
+        <input type="text" id="newTimeInput" placeholder="New Time (Ex: 10:00 AM)">
+        <button onclick="updateScheduleOnFirebase()">Push Update</button>
     </div>
 </div>
+
+<div id="notifModal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeNotif()">&times;</span>
+        <h2>New Update!</h2>
+        <div id="notifDetails" style="text-align: left; line-height: 1.6; color: #333;">
+            </div>
+        <button style="margin-top: 20px;" onclick="closeNotif()">Got it</button>
+    </div>
+</div>
+
+<div id="toast">🔔 Schedule Updated!</div>
 
 <script>
     const firebaseConfig = {
@@ -175,7 +127,7 @@
         storageBucket: "unialert-6e165.firebasestorage.app",
         messagingSenderId: "771160764482",
         appId: "1:771160764482:web:30796a4cf47579e9b33ddb",
-        measurementId: "G-MVNJS6DJWK"
+        databaseURL: "https://unialert-6e165-default-rtdb.firebaseio.com"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -183,85 +135,107 @@
 
     window.onload = () => {
         setTimeout(() => {
-            const screen = document.getElementById('welcomeScreen');
-            screen.style.opacity = '0';
-            setTimeout(() => {
-                screen.style.visibility = 'hidden';
-                // الدخول مباشرة لصفحة الكليات
-                document.getElementById('collegePage').classList.remove('hidden');
-            }, 800);
-        }, 3000);
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('collegePage').classList.remove('hidden');
+        }, 2500);
     };
 
-    let userFaculty = "";
+    // إظهار خانة الاسم للمعيد فقط عند كتابة ta
+    document.getElementById('emailInput').oninput = function() {
+        if(this.value.startsWith('ta')) document.getElementById('taNameInput').classList.remove('hidden');
+        else document.getElementById('taNameInput').classList.add('hidden');
+    };
 
     function goToLogin(faculty) {
-        userFaculty = faculty;
         document.getElementById('collegePage').classList.add('hidden');
         document.getElementById('loginPage').classList.remove('hidden');
         document.getElementById('facultyTitle').innerText = faculty;
     }
 
+    let currentUser = "Student";
+
     function handleLogin() {
         const email = document.getElementById('emailInput').value.toLowerCase();
-        
+        const taName = document.getElementById('taNameInput').value;
         if(email.endsWith("@ecu.edu.eg")) {
+            if(email.startsWith("ta")) currentUser = taName || "TA";
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-
-            if(email.startsWith("ta") || email.startsWith("admin")) {
-                document.getElementById('adminPanel').classList.remove('hidden');
-                document.getElementById('dashboardTitle').innerText = "TA Dashboard";
-            }
-
-            startRealtimeListener();
-        } else {
-            alert("Error: Please use your official @ecu.edu.eg email.");
+            if(email.startsWith("ta")) document.getElementById('adminPanel').classList.remove('hidden');
+            startListening();
         }
     }
 
-    function startRealtimeListener() {
-        const scheduleRef = database.ref('ecu_data/schedule');
-        
-        scheduleRef.on('value', (snapshot) => {
+    let isFirstLoad = true;
+    let latestUpdate = {};
+
+    function startListening() {
+        database.ref('ecu_data/schedule').on('value', (snapshot) => {
             const data = snapshot.val();
             if(data) {
-                renderSchedule(data);
-                const alertBox = document.getElementById('alertBox');
-                alertBox.innerText = "⚠️ Schedule was updated by faculty!";
-                alertBox.style.background = "#c0392b";
-                alertBox.style.color = "white";
+                document.getElementById('schedule').innerHTML = `
+                    <tr><td>General Biology</td><td>${data.biologyTime || "09:00 AM"}</td></tr>
+                    <tr><td>Academic Writing</td><td>${data.writingTime || "11:30 AM"}</td></tr>
+                `;
+
+                if (!isFirstLoad) {
+                    latestUpdate = data;
+                    showNotification();
+                }
+                isFirstLoad = false;
             }
         });
     }
 
-    function renderSchedule(data) {
-        const tbody = document.getElementById('schedule');
-        tbody.innerHTML = `
-            <tr><td>General Biology</td><td>${data.biologyTime || "09:00 AM"}</td></tr>
-            <tr><td>Academic Writing</td><td>${data.writingTime || "11:30 AM"}</td></tr>
-            <tr><td>Intro to Faculty</td><td>02:00 PM</td></tr>
-        `;
+    function showNotification() {
+        document.getElementById('dot').style.display = 'block';
+        const toast = document.getElementById("toast");
+        toast.className = "show";
+        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        
+        // صوت يشبه iPhone/Outlook (نغمة هادئة)
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
+        audio.play();
     }
 
+    function openNotif() {
+        document.getElementById('dot').style.display = 'none';
+        const details = document.getElementById('notifDetails');
+        if(latestUpdate.lastSubject) {
+            details.innerHTML = `
+                <p><b>Subject:</b> ${latestUpdate.lastSubject}</p>
+                <p><b>New Time:</b> ${latestUpdate.lastTime}</p>
+                <p><b>Updated By:</b> ${latestUpdate.updatedBy}</p>
+                <hr>
+                <p style="font-size: 12px; color: gray;">Time of update: ${new Date().toLocaleTimeString()}</p>
+            `;
+        } else {
+            details.innerHTML = "<p>No new updates for now.</p>";
+        }
+        document.getElementById('notifModal').style.display = 'flex';
+    }
+
+    function closeNotif() { document.getElementById('notifModal').style.display = 'none'; }
+
     function updateScheduleOnFirebase() {
-        const selectedKey = document.getElementById('subjectSelect').value; // جلب اسم الخانة المختارة
+        const subject = document.getElementById('subjectSelect').value;
         const newTime = document.getElementById('newTimeInput').value;
+        if(newTime === "") return alert("Enter time");
         
-        if(newTime === "") return alert("Please enter the new time.");
+        const updateData = {
+            lastSubject: subject,
+            lastTime: newTime,
+            updatedBy: "Dr. " + currentUser
+        };
 
-        // التحديث بناءً على المادة المختارة من الـ Select
-        let updates = {};
-        updates[selectedKey] = newTime;
+        if(subject === "General Biology") updateData.biologyTime = newTime;
+        else updateData.writingTime = newTime;
 
-        database.ref('ecu_data/schedule').update(updates).then(() => {
-            alert("Update successful! Database updated for " + selectedKey);
+        database.ref('ecu_data/schedule').update(updateData).then(() => {
+            alert("Update pushed to all students!");
             document.getElementById('newTimeInput').value = "";
-        }).catch((error) => {
-            alert("Error: " + error.message);
         });
     }
 </script>
-
 </body>
 </html>
