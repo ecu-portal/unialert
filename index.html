@@ -174,8 +174,8 @@
             const data = snapshot.val();
             if(data) {
                 document.getElementById('schedule').innerHTML = `
-                    <tr><td>General Entrepreneurship</td><td>${data.biologyTime || "09:00 AM"}</td></tr>
-                    <tr><td>Academic Computer Graphics</td><td>${data.writingTime || "11:30 AM"}</td></tr>
+                    <tr><td>Entrepreneurship</td><td>${data.biologyTime || "09:00 AM"}</td></tr>
+                    <tr><td>Computer Graphics</td><td>${data.writingTime || "11:30 AM"}</td></tr>
                 `;
 
                 if (!isFirstLoad) {
