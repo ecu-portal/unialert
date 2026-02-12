@@ -99,8 +99,8 @@
     <div id="adminPanel" class="hidden" style="margin-top:20px; border-top: 2px dashed #ccc; padding-top:15px;">
         <h3>TA Control</h3>
         <select id="subjectSelect">
-            <option value="General Biology">Course 1: Biology</option>
-            <option value="Academic Writing">Course 2: Writing</option>
+            <option value="General Biology">Course 1: Entrepreneurship</option>
+            <option value="Academic Writing">Course 2: Computer Graphics</option>
         </select>
         <input type="text" id="newTimeInput" placeholder="New Time (Ex: 10:00 AM)">
         <button onclick="updateScheduleOnFirebase()">Push Update</button>
@@ -174,8 +174,8 @@
             const data = snapshot.val();
             if(data) {
                 document.getElementById('schedule').innerHTML = `
-                    <tr><td>General Biology</td><td>${data.biologyTime || "09:00 AM"}</td></tr>
-                    <tr><td>Academic Writing</td><td>${data.writingTime || "11:30 AM"}</td></tr>
+                    <tr><td>General Entrepreneurship</td><td>${data.biologyTime || "09:00 AM"}</td></tr>
+                    <tr><td>Academic Computer Graphics</td><td>${data.writingTime || "11:30 AM"}</td></tr>
                 `;
 
                 if (!isFirstLoad) {
@@ -228,8 +228,13 @@
             updatedBy: "Dr. " + currentUser
         };
 
-        if(subject === "General Biology") updateData.biologyTime = newTime;
-        else updateData.writingTime = newTime;
+    if(subject === "General Biology") {
+            updateData.biologyTime = newTime;
+            updateData.lastSubject = "Entrepreneurship"; // ده اللي هيظهر في الإشعار
+        } else {
+            updateData.writingTime = newTime;
+            updateData.lastSubject = "Computer Graphics"; // ده اللي هيظهر في الإشعار للمادة التانية
+        }
 
         database.ref('ecu_data/schedule').update(updateData).then(() => {
             alert("Update pushed to all students!");
