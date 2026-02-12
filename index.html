@@ -71,17 +71,17 @@
 
         button:hover { background: #a93226; transform: translateY(-2px); }
 
-        input {
+        input, select {
             width: 90%;
             padding: 12px;
             margin: 10px 0;
             border: 1px solid #ddd;
             border-radius: 6px;
+            font-size: 15px;
         }
 
         .hidden { display: none !important; }
 
-        /* Notification Box */
         .notif-bar {
             background: #fff0f0;
             border-left: 5px solid var(--main-red);
@@ -105,10 +105,9 @@
 
         th { background: var(--main-red); color: white; }
 
-        /* Admin Section Styling */
         #adminPanel {
             margin-top: 20px;
-            padding-top: 15px;
+            padding: 15px;
             border-top: 2px dashed #ccc;
             background: #f9f9f9;
             border-radius: 8px;
@@ -121,11 +120,6 @@
     <img src="logo.png" id="mainLogo" alt="University Logo">
     <h2 style="color: var(--main-red);">Welcome to ECU Portal</h2>
     <p>Connecting to Firebase Realtime Database...</p>
-</div>
-<div class="container hidden" id="rolePage">
-    <h1>UniAlert</h1>
-    <p>Please select to continue</p>
-    <button onclick="showColleges()">Student</button>
 </div>
 
 <div class="container hidden" id="collegePage">
@@ -161,14 +155,19 @@
 
     <div id="adminPanel" class="hidden">
         <h3 style="color: #333;">TA Control Panel</h3>
-        <p style="font-size: 13px;">Update "General Biology" time for everyone:</p>
-        <input type="text" id="newTimeInput" placeholder="Ex: 10:30 AM or Hall C">
+        <p style="font-size: 13px;">Select subject to update:</p>
+        
+        <select id="subjectSelect">
+            <option value="biologyTime">Course 1: General Biology</option>
+            <option value="writingTime">Course 2: Academic Writing</option>
+        </select>
+
+        <input type="text" id="newTimeInput" placeholder="Enter new time (Ex: 10:30 AM)">
         <button style="background: #2c3e50;" onclick="updateScheduleOnFirebase()">Push Update to All</button>
     </div>
 </div>
 
 <script>
-    // 1. إعدادات Firebase الخاصة بك
     const firebaseConfig = {
         apiKey: "AIzaSyDx8U4_pYqLAKtdV5jCBqFk9sOKb9Jq_RQ",
         authDomain: "unialert-6e165.firebaseapp.com",
@@ -179,28 +178,22 @@
         measurementId: "G-MVNJS6DJWK"
     };
 
-    // تشغيل Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // 2. التحكم في شاشة البداية
     window.onload = () => {
         setTimeout(() => {
             const screen = document.getElementById('welcomeScreen');
             screen.style.opacity = '0';
             setTimeout(() => {
                 screen.style.visibility = 'hidden';
-                document.getElementById('rolePage').classList.remove('hidden');
+                // الدخول مباشرة لصفحة الكليات
+                document.getElementById('collegePage').classList.remove('hidden');
             }, 800);
         }, 3000);
     };
 
     let userFaculty = "";
-
-    function showColleges() {
-        document.getElementById('rolePage').classList.add('hidden');
-        document.getElementById('collegePage').classList.remove('hidden');
-    }
 
     function goToLogin(faculty) {
         userFaculty = faculty;
@@ -209,7 +202,6 @@
         document.getElementById('facultyTitle').innerText = faculty;
     }
 
-    // 3. نظام تسجيل الدخول مع التمييز بين الطالب والمعيد
     function handleLogin() {
         const email = document.getElementById('emailInput').value.toLowerCase();
         
@@ -217,19 +209,17 @@
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
 
-            // التمييز: إذا كان الإيميل يبدأ بـ ta يعتبر معيد
             if(email.startsWith("ta") || email.startsWith("admin")) {
                 document.getElementById('adminPanel').classList.remove('hidden');
                 document.getElementById('dashboardTitle').innerText = "TA Dashboard";
             }
 
-            startRealtimeListener(); // بدء استقبال البيانات الحقيقية
+            startRealtimeListener();
         } else {
             alert("Error: Please use your official @ecu.edu.eg email.");
         }
     }
 
-    // 4. الربط الحقيقي مع Firebase (لسماع التحديثات)
     function startRealtimeListener() {
         const scheduleRef = database.ref('ecu_data/schedule');
         
@@ -237,7 +227,6 @@
             const data = snapshot.val();
             if(data) {
                 renderSchedule(data);
-                // إظهار تنبيه عند حدوث أي تغيير
                 const alertBox = document.getElementById('alertBox');
                 alertBox.innerText = "⚠️ Schedule was updated by faculty!";
                 alertBox.style.background = "#c0392b";
@@ -248,7 +237,6 @@
 
     function renderSchedule(data) {
         const tbody = document.getElementById('schedule');
-        // البيانات الآن تأتي من Firebase مباشرة
         tbody.innerHTML = `
             <tr><td>General Biology</td><td>${data.biologyTime || "09:00 AM"}</td></tr>
             <tr><td>Academic Writing</td><td>${data.writingTime || "11:30 AM"}</td></tr>
@@ -256,18 +244,21 @@
         `;
     }
 
-    // 5. وظيفة المعيد لتحديث البيانات للكل
     function updateScheduleOnFirebase() {
+        const selectedKey = document.getElementById('subjectSelect').value; // جلب اسم الخانة المختارة
         const newTime = document.getElementById('newTimeInput').value;
-        if(newTime === "") return alert("Please enter the new time/update.");
+        
+        if(newTime === "") return alert("Please enter the new time.");
 
-        database.ref('ecu_data/schedule').update({
-            biologyTime: newTime
-        }).then(() => {
-            alert("Update successful! All students will see it now.");
+        // التحديث بناءً على المادة المختارة من الـ Select
+        let updates = {};
+        updates[selectedKey] = newTime;
+
+        database.ref('ecu_data/schedule').update(updates).then(() => {
+            alert("Update successful! Database updated for " + selectedKey);
             document.getElementById('newTimeInput').value = "";
         }).catch((error) => {
-            alert("Firebase Error: Make sure Rules are set to true. " + error.message);
+            alert("Error: " + error.message);
         });
     }
 </script>
